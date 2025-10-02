@@ -1,0 +1,58 @@
+# Stage 1: Build the application
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
+
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+
+# Create app directory
+WORKDIR /app
+
+# Copy dependency files first for better layer caching
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies only (no project code yet)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-install-project --no-editable --no-dev
+
+# Copy application source code
+COPY src/ /app/src
+
+# Create README.md if not present (required by hatchling build)
+RUN touch README.md
+
+# Install the project itself
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-editable --no-dev
+
+# Stage 2: Runtime image
+FROM python:3.13-slim-bookworm AS runtime
+
+# Install utilities for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN groupadd --gid=1000 app \
+    && useradd --uid=1000 --gid=app --shell=/bin/bash --create-home app
+
+# Copy the virtual environment from builder stage
+COPY --from=builder --chown=app:app /app /app
+
+# Copy the entrypoint script
+COPY --chown=app:app entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Set up environment
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app/src"
+
+# Switch to non-root user
+USER app
+WORKDIR /app
+
+# Expose the default MCP server port
+EXPOSE 3000
+
+# Set the entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]

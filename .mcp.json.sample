@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "snapture-quickdata-mcp": {
+      "comment": "This server is only usable as an HTTP streamable MCP server. Configure the URL below.",
+      "url": "http://localhost:8000",
+      "transport": "http"
+    }
+  }
+}
