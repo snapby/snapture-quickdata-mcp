@@ -91,7 +91,6 @@ coverage/
 # Development tools
 .aider*
 !.aider.conf.yml.example
-uv.lock
 specs/*.yml
 server/reports_legacy/
 **.ignore**
