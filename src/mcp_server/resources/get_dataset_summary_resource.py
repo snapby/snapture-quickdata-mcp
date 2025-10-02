@@ -2,6 +2,7 @@
 
 from ..models.schemas import DatasetManager, loaded_datasets, dataset_schemas
 from typing import Dict, Any, Optional
+from ..utils import convert_numpy_types
 
 
 async def get_dataset_summary(dataset_name: str) -> dict:
@@ -39,7 +40,7 @@ async def get_dataset_summary(dataset_name: str) -> dict:
             "columns_with_missing": missing_data[missing_data > 0].to_dict()
         }
         
-        return summary
+        return convert_numpy_types(summary)
         
     except Exception as e:
         return {"error": f"Failed to generate summary: {str(e)}"}
