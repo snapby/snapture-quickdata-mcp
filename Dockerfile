@@ -39,6 +39,9 @@ RUN groupadd --gid=1000 app \
 # Copy the virtual environment from builder stage
 COPY --from=builder --chown=app:app /app /app
 
+# Copy the uv executable from the builder stage
+COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
+
 # Copy the entrypoint script
 COPY --chown=app:app entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
