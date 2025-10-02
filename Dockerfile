@@ -15,6 +15,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Copy application source code
 COPY src/ /app/src
+COPY data/ /app/data
 
 # Create README.md if not present (required by hatchling build)
 RUN touch README.md
